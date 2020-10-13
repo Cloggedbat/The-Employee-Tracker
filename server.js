@@ -29,7 +29,7 @@ function runSearch() {
         .prompt({
             name: "action",
             type: "list",
-            message: "What would you like to do?",
+            message: "What would you like to do? (if adding a new enployee go in order so you dont get lost)",
             choices: [
                 "View All Employees",
                 "View All Employees By Department",
@@ -50,9 +50,6 @@ function runSearch() {
                     viewDepartment();
                     break;
 
-                case "View All Employees By Manager":
-
-                    break;
 
                 case "Add Employee":
                     addEmployee();
@@ -62,13 +59,18 @@ function runSearch() {
                     addDepartment();
                     break;
 
-                case "Add role":
+                case "Add Salary":
+                    addSalary();
+                    break;
+                case "Add Role":
                     addRole();
                     break;
             }
         });
 
 }
+
+
 function viewEnployee() {
     // inquirer.prompt({
     //     name: "employee",
@@ -129,12 +131,7 @@ function addEmployee() {
             type: "input",
             message: "What is the employees role id #?"
         }
-        ,
-        {
-            name: "salary",
-            type: "input",
-            message: "What is the employees salary?"
-        }
+      
 
     ])
 
@@ -152,14 +149,12 @@ function addEmployee() {
                 // },
                 function (err, res) {
                     if (err) throw err;
-                    console.log("Department added")
+                    console.log("Employee added")
                     runSearch();
                 });
 
         });
 };
-
-
 
 
 
@@ -169,25 +164,42 @@ function addRole() {
             {
                 name: "title",
                 type: "input",
-                message: "What is the name of your new role?"
+                message: "What is the name of your title?",
+            },
+            {
+                name: "salary",
+                type: "input",
+                message: "What is the salary? please use #'s only",
+            },
+            {
+                name: "department_id",
+                type: "input",
+                message: "What is the name of your department id?",
             }
         ])
         .then(function (answer) {
             connection.query("INSERT INTO role SET ?",
                 {
-                    title: answer.department_id
+                    title: answer.title,
+                    salary: answer.salary,
+                    department_id: answer.department_id
                 },
 
 
                 function (err) {
                     if (err) throw err;
-                    console.log("role added")
+                    console.log("department added")
                     runSearch();
                 })
         })
 
 
 }
+
+
+
+
+
 
 function addDepartment() {
     inquirer
