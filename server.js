@@ -1,6 +1,7 @@
 var mysql = require("mysql");
 const inquirer = require("inquirer");
 const table = require("console.table");
+const { query } = require("express");
 
 var connection = mysql.createConnection({
     host: "localhost",
@@ -34,9 +35,11 @@ function runSearch() {
                 "View All Employees",
                 "View All Employees By Department",
                 "View All Employees By Manager",
-                "Add Employee",
-                "Add Department",
-                "Add Role"
+                // "Add Employee",
+                // "Add Department",
+                "View All Roles",
+                "Add New Teammember",
+                "Update"
             ]
         })
 
@@ -51,6 +54,45 @@ function runSearch() {
                     break;
 
 
+                // case "Add Employee":
+                //     addEmployee();
+                //     break;
+
+                case "View All Roles":
+                    viewRole();
+                    break;
+
+                case "Add New Teammember":
+                    addNewTeamMember();
+                    break;
+                case "Update":
+                    upDateEnployeeRole();
+                    break;
+            }
+        });
+
+}
+
+
+
+function addNewTeamMember() {
+    inquirer
+        .prompt({
+            name: "action",
+            type: "list",
+            message: "What would you like to do?",
+            choices: [
+
+                "Add Employee",
+                "Add Department",
+                "Add Role"
+            ]
+        })
+
+        .then(function (answer) {
+            switch (answer.action) {
+
+
                 case "Add Employee":
                     addEmployee();
                     break;
@@ -59,9 +101,6 @@ function runSearch() {
                     addDepartment();
                     break;
 
-                case "Add Salary":
-                    addSalary();
-                    break;
                 case "Add Role":
                     addRole();
                     break;
@@ -69,6 +108,8 @@ function runSearch() {
         });
 
 }
+
+
 
 
 function viewEnployee() {
@@ -88,30 +129,91 @@ function viewEnployee() {
 };
 
 function viewDepartment() {
-    inquirer.prompt({
-        name: "department",
-        type: "list",
-        message: "What department would you like to see? ",
-        choices: [
-            "sales",
-            "researcher",
-            "enginier"
+    var query = "SELECT * FROM department ";
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        runSearch();
+    });
+};
 
-        ]
-    })
-        .then(function (answer) {
-            var query = "SELECT * employee INNER JOIN department ON employee.id = department.id INNER JOIN role ON department.id = role.id";
-            connection.query(query, { department: answer.department }, function (err, res) {
-                if (err) throw err
-                for (var i = 0; i < res.length; i++) {
-                    console.table("id: " + answer[i].id + " || first_name: " + answer[i].first_name + " || last_name: " + answer[i].last_name + " || role_id: " + answer[i].role_id + " || department: " + answer[i].department);
-                }
+function viewRole() {
+    var query = "SELECT * FROM role ";
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+        console.table(res);
+        runSearch();
+    });
+};
+// we are using this to grabe and update the roles and enployees and update there titles
+function upDateEnployeeRole() {
+
+    var queryEmployees = "SELECT * FROM employee"
+    var queryRole = "SELECT * FROM role "
+    connection.query(queryEmployees, async function (empErr, empres) {
+        if (empErr) throw empErr;
+        console.log(empres);
+
+        const map1 = empres.map(x => x.first_name + " " + x.last_name)
+        var seclectedEmp = await inquirer.prompt({
+            name: "action",
+            type: "list",
+            message: " what employee would you like to change ",
+            choices: map1
 
 
-                runSearch();
-            });
+        })
+        console.log("employee", seclectedEmp)
+
+
+        connection.query(queryRole, function (roleErr, rolres) {
+            if (roleErr) throw roleErr;
+            console.table(rolres);
+
         });
-}
+    })
+
+
+    // runSearch();
+};
+
+
+
+// inquirer.prompt({
+//     name: "department",
+//     type: "list",
+//     message: "What department would you like to see? ",
+//     choices: [
+//         "sales",
+//         "researcher",
+//         "enginier"
+
+//     ]
+// })
+// .then(function (answer) {
+//     var query = "SELECT * employee INNER JOIN department ON employee.id = department.id INNER JOIN role ON department.id = role.id";
+//     connection.query(query, { department: answer.department }, function (err, res) {
+//         if (err) throw err
+//         for (var i = 0; i < res.length; i++) {
+//             console.table("id: " + answer[i].id + " || first_name: " + answer[i].first_name + " || last_name: " + answer[i].last_name + " || role_id: " + answer[i].role_id + " || department: " + answer[i].department);
+//         }
+
+
+//         runSearch();
+//     });
+// });
+// }
+
+
+
+
+
+
+
+
+
+
+
 
 
 function addEmployee() {
@@ -131,7 +233,7 @@ function addEmployee() {
             type: "input",
             message: "What is the employees role id #?"
         }
-      
+
 
     ])
 
