@@ -207,7 +207,7 @@ function upDateEnployeeRole() {
 
 function completeUpdate(seclectedRole, seclectedEmp) {
     //Update the address field:
-    var sql = "UPDATE role SET title = ? WHERE id = ?";
+    var sql = "UPDATE employee SET role_id = ? WHERE id = ?";
     connection.query(sql, [seclectedRole.action, seclectedEmp.action], function (err, result) {
         if (err) throw err;
         console.log(result);
