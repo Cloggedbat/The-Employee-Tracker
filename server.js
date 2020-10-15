@@ -118,8 +118,10 @@ function addNewTeamMember() {
 // all of the functions that allow you to view Employee, Department, Role and Manager are housed from 116 to________ This is also where we are calling the data base
 // 
 
-function viewEnployee() {
-    var query = "SELECT * FROM employee INNER JOIN department ON employee.id = department.id INNER JOIN role ON department.id = role.id";
+
+function viewEnployee(query) {
+    
+    var query = "SELECT employee.First_Name, employee.Last_Name, Department.Department, role.Title, role.Salary FROM employee INNER JOIN department ON employee.id = department.id INNER JOIN role ON department.id = role.id;";
     connection.query(query, function (err, res) {
         if (err) throw err;
         console.table(res);
@@ -205,7 +207,7 @@ function upDateEnployeeRole() {
 
 function completeUpdate(seclectedRole, seclectedEmp) {
     //Update the address field:
-    var sql = "UPDATE employee SET Role_id = ? WHERE id = ?";
+    var sql = "UPDATE role SET title = ? WHERE id = ?";
     connection.query(sql, [seclectedRole.action, seclectedEmp.action], function (err, result) {
         if (err) throw err;
         console.log(result);
