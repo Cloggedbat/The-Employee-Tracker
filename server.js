@@ -30,16 +30,16 @@ function runSearch() {
         .prompt({
             name: "action",
             type: "list",
-            message: "What would you like to do? (if adding a new enployee go in order so you dont get lost)",
+            message: "Welcome, Enployee Roster please update with the most recent information at all times, If a new enployee is being added note that complete onboarding must be completed before roster is updated",
             choices: [
                 "View All Employees",
-                "View All Employees By Department",
-                "View All Employees By Manager",
+                "View By Department",
+                // "View All Employees By Manager",
                 // "Add Employee",
                 // "Add Department",
                 "View All Roles",
                 "Add New Teammember",
-                "Update"
+                "Update Employee"
             ]
         })
 
@@ -49,14 +49,14 @@ function runSearch() {
                     viewEnployee();
                     break;
 
-                case "View All Employees By Department":
+                case "View By Department":
                     viewDepartment();
                     break;
 
 
-                // case "Add Employee":
-                //     addEmployee();
-                //     break;
+                case "View By Manager":
+                    addManager();
+                    break;
 
                 case "View All Roles":
                     viewRole();
@@ -65,9 +65,14 @@ function runSearch() {
                 case "Add New Teammember":
                     addNewTeamMember();
                     break;
-                case "Update":
+                case "Update Employee":
                     upDateEnployeeRole();
                     break;
+
+                case "Complete Update":
+                    completeUpdate();
+                    break;
+
             }
         });
 
@@ -110,15 +115,10 @@ function addNewTeamMember() {
 }
 
 
-
+// all of the functions that allow you to view Employee, Department, Role and Manager are housed from 116 to________ This is also where we are calling the data base
+// 
 
 function viewEnployee() {
-    // inquirer.prompt({
-    //     name: "employee",
-    //     type: "input",
-    //     // message: "What is the employees first name? ",
-    // })
-    // (function (answer) {
     var query = "SELECT * FROM employee INNER JOIN department ON employee.id = department.id INNER JOIN role ON department.id = role.id";
     connection.query(query, function (err, res) {
         if (err) throw err;
@@ -145,37 +145,79 @@ function viewRole() {
         runSearch();
     });
 };
+
+// function addManager() {
+//     var query = "SELECT * FROM role.manager ";
+//     connection.query(query, function (err, res) {
+//         if (err) throw err;
+//         console.table(res);
+//         runSearch();
+//     });
+// };
+
+
+
+
+
 // we are using this to grabe and update the roles and enployees and update there titles
+
 function upDateEnployeeRole() {
 
     var queryEmployees = "SELECT * FROM employee"
     var queryRole = "SELECT * FROM role "
     connection.query(queryEmployees, async function (empErr, empres) {
         if (empErr) throw empErr;
-        console.log(empres);
+        console.table(empres);
 
-        const map1 = empres.map(x => x.first_name + " " + x.last_name)
+        const map1 = empres.map(x => x.First_Name + " " + x.Last_Name)
         var seclectedEmp = await inquirer.prompt({
             name: "action",
             type: "list",
-            message: " what employee would you like to change ",
+            message: " What employee would you like to change ",
             choices: map1
 
 
         })
-        console.log("employee", seclectedEmp)
+        console.log(seclectedEmp.action)
+        
+        seclectedEmp.action 
 
-
-        connection.query(queryRole, function (roleErr, rolres) {
+        connection.query(queryRole, async function (roleErr, roleres) {
             if (roleErr) throw roleErr;
-            console.table(rolres);
+            console.table(roleres);
 
+            const map2 = roleres.map(x => x.Title + " ")
+            var seclectedRole = await inquirer.prompt({
+                name: "action",
+                type: "list",
+                message: " What role would you like to change ",
+                choices: map2
+
+
+            })
+            console.log(seclectedRole.action)
+            completeUpdate(seclectedRole, seclectedEmp)
         });
     })
-
-
-    // runSearch();
+    
+    
 };
+
+function completeUpdate(seclectedRole, seclectedEmp) {
+    //Update the address field:
+    var sql = "UPDATE employee SET Role_id = ? WHERE id = ?";
+    connection.query(sql, [seclectedRole.action, seclectedEmp.action], function (err, result) {
+        if (err) throw err;
+        console.log(result);
+        runSearch();
+    });
+    
+
+}
+
+
+
+
 
 
 
@@ -208,30 +250,22 @@ function upDateEnployeeRole() {
 
 
 
-
-
-
-
-
-
-
-
 function addEmployee() {
     inquirer.prompt([
         {
-            name: "first_name",
+            name: "First_Name",
             type: "input",
             message: "What is the employees first name?"
         },
         {
-            name: "last_name",
+            name: "Last_Name",
             type: "input",
             message: "What is the employees last name?"
         },
         {
-            name: "role_id",
+            name: "Role_id",
             type: "input",
-            message: "What is the employees role id #?"
+            message: "What is the employees role?"
         }
 
 
@@ -240,9 +274,10 @@ function addEmployee() {
         .then(function (answer) {
             connection.query("INSERT INTO employee SET ?",
                 {
-                    first_name: answer.first_name,
-                    last_name: answer.last_name,
-                    role_id: answer.role_id,
+                    First_Name: answer.First_Name,
+                    Last_Name: answer.Last_Name,
+                    Role_id: answer.Role_id,
+                    Manager: answer.Manager,
                     // salary: answer.salary,
                 },
                 // connection.query ("INSERT INTO role SET ?", 
@@ -276,7 +311,7 @@ function addRole() {
             {
                 name: "department_id",
                 type: "input",
-                message: "What is the name of your department id?",
+                message: "What is the name of your Department id?",
             }
         ])
         .then(function (answer) {
@@ -329,5 +364,38 @@ function addDepartment() {
 }
 
 
+// function addDepartment() {
+//     var queryDepo = "SELECT * FROM Department "
+//     connection.query(queryDepo, async function (empErr, empres) {
+//         if (empErr) throw empErr;
+//         console.table(empres);
+//         const map1 = empres.map(x => x.Department + " ")
+//         var seclectedEmp = await inquirer.prompt
+//             ([{
+//                 name: "department",
+//                 message: "Choose a Department",
+//                 type: "list",
+//                 choices: map1
+//             }])
+//         // console.log("employee", seclectedEmp)
 
+//         .then(function (empres) {
+//                 connection.query("INSERT INTO department SET ?",
+//                     {
+//                         department: answer.department
+//                     },
+
+
+//                     function (err) {
+//                         if (err) throw err;
+//                         console.log("department added")
+//                         runSearch();
+
+
+//                     })
+//             })
+
+
+//     })
+// }
 
