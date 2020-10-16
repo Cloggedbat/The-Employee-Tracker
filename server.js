@@ -26,6 +26,16 @@ connection.connect(function (err) {
 //   initial prompt function for the questions 
 
 function runSearch() {
+    
+console.log(" _______ _______ ______ _______ ______ _______      _______ _______ ______ _____   _______ ___ ___ _______ _______      ______ _______ _____   _______" );
+console.log("|    ___|   |   |   __ \_     _|   __ \    ___|    |    ___|   |   |   __ \     |_|       |   |   |    ___|    ___|    |   __ \       |     |_|    ___|");
+console.log("|    ___|       |    __/_|   |_|      <    ___|    |    ___|       |    __/       |   -   |\     /|    ___|    ___|    |      <   -   |       |    ___|");
+console.log("|_______|__|_|__|___|  |_______|___|__|_______|    |_______|__|_|__|___|  |_______|_______| |___| |_______|_______|    |___|__|_______|_______|_______|");
+                                                                                                                                                        
+ 
+    
+    
+    
     inquirer
         .prompt({
             name: "action",
@@ -119,12 +129,12 @@ function addNewTeamMember() {
 // 
 
 
-function viewEmployee(query) {
+function viewEmployee() {
     
-    var query = "SELECT employee.First_Name, employee.Last_Name, Department.Department, role.Title, role.Salary FROM employee INNER JOIN department ON employee.id = department.id INNER JOIN role ON department.id = role.id;";
-    connection.query(query, function (err, res) {
+    var query = "SELECT employee.First_Name, employee.Last_Name, Department.Department, employee.role_id, role.Title, role.Salary FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id;";
+    connection.query(query, function (err, empress) {
         if (err) throw err;
-        console.table(res);
+        console.table(empress);
 
         runSearch();
     });
@@ -165,13 +175,16 @@ function viewRole() {
 
 function upDateEnployeeRole() {
 
-    var queryEmployees = "SELECT * FROM employee"
-    var queryRole = "SELECT * FROM role "
+    var queryEmployees = "SELECT employee.id, employee.First_Name, employee.Last_Name, Department.Department, employee.role_id, role.Title, role.Salary FROM employee INNER JOIN role ON employee.role_id = role.id INNER JOIN department ON role.department_id = department.id;";
+    // var queryRole = "SELECT * FROM role "
     connection.query(queryEmployees, async function (empErr, empres) {
         if (empErr) throw empErr;
         console.table(empres);
 
-        const map1 = empres.map(x => x.First_Name + " " + x.Last_Name)
+
+        // x.First_Name + " " + x.Last_Name + " " +
+
+        const map1 = empres.map(x =>  x.id)
         var seclectedEmp = await inquirer.prompt({
             name: "action",
             type: "list",
@@ -182,14 +195,13 @@ function upDateEnployeeRole() {
         })
         console.log(seclectedEmp.action)
         
-       
-        
-        connection.query(queryRole, async function (roleErr, roleres) {
+
+        connection.query(queryEmployees, async function (roleErr, roleres) {
             if (roleErr) throw roleErr;
             console.table(roleres);
-            // const id = roleres.map(x => x.id + " ")
+            // const id = roleres.map(x => x.Role_id + " ")
 
-            const map2 = roleres.map(x => x.id + " ")
+            const map2 = roleres.map(x => x.role_id + " ")
             var seclectedRole = await inquirer.prompt({
                 name: "action",
                 type: "list",
@@ -199,7 +211,7 @@ function upDateEnployeeRole() {
 
             })
             console.log(seclectedRole.action)
-            completeUpdate(seclectedRole, seclectedEmp )
+            completeUpdate(seclectedRole, seclectedEmp)
         });
     })
     
@@ -208,15 +220,16 @@ function upDateEnployeeRole() {
 //Update the address field:
 
 function completeUpdate(seclectedRole, seclectedEmp) {
-    var sql = "UPDATE role SET Department_id = ? WHERE id = ? ";
-    connection.query(sql, [seclectedRole.action, seclectedEmp.action ], function (err, result) {
-        if (err) throw err;
+    var sql = "UPDATE employee SET role_id = ? WHERE id = ?";
+    connection.query(sql, [seclectedRole.action, seclectedEmp.action], 
+        function (err, result) {
+        
+            if (err) throw err;
         console.log(result);
         runSearch();
     });
     
 console.log(seclectedRole, seclectedEmp)
-// connection.query(sql)
 }
 
 
@@ -267,7 +280,7 @@ function addEmployee() {
             message: "What is the employees last name?"
         },
         {
-            name: "Role_id",
+            name: "role_id",
             type: "input",
             message: "What is the employees role?"
         }
@@ -280,8 +293,8 @@ function addEmployee() {
                 {
                     First_Name: answer.First_Name,
                     Last_Name: answer.Last_Name,
-                    Role_id: answer.Role_id,
-                    Manager: answer.Manager,
+                    role_id: answer.role_id,
+                    // Manager: answer.Manager,
                     // salary: answer.salary,
                 },
                 // connection.query ("INSERT INTO role SET ?", 
