@@ -46,7 +46,7 @@ function runSearch() {
         .then(function (answer) {
             switch (answer.action) {
                 case "View All Employees":
-                    viewEnployee();
+                    viewEmployee();
                     break;
 
                 case "View By Department":
@@ -119,7 +119,7 @@ function addNewTeamMember() {
 // 
 
 
-function viewEnployee(query) {
+function viewEmployee(query) {
     
     var query = "SELECT employee.First_Name, employee.Last_Name, Department.Department, role.Title, role.Salary FROM employee INNER JOIN department ON employee.id = department.id INNER JOIN role ON department.id = role.id;";
     connection.query(query, function (err, res) {
@@ -182,13 +182,14 @@ function upDateEnployeeRole() {
         })
         console.log(seclectedEmp.action)
         
-        seclectedEmp.action 
-
+       
+        
         connection.query(queryRole, async function (roleErr, roleres) {
             if (roleErr) throw roleErr;
             console.table(roleres);
+            // const id = roleres.map(x => x.id + " ")
 
-            const map2 = roleres.map(x => x.Title + " ")
+            const map2 = roleres.map(x => x.id + " ")
             var seclectedRole = await inquirer.prompt({
                 name: "action",
                 type: "list",
@@ -198,23 +199,24 @@ function upDateEnployeeRole() {
 
             })
             console.log(seclectedRole.action)
-            completeUpdate(seclectedRole, seclectedEmp)
+            completeUpdate(seclectedRole, seclectedEmp )
         });
     })
     
     
 };
+//Update the address field:
 
 function completeUpdate(seclectedRole, seclectedEmp) {
-    //Update the address field:
-    var sql = "UPDATE employee SET role_id = ? WHERE id = ?";
-    connection.query(sql, [seclectedRole.action, seclectedEmp.action], function (err, result) {
+    var sql = "UPDATE role SET Department_id = ? WHERE id = ? ";
+    connection.query(sql, [seclectedRole.action, seclectedEmp.action ], function (err, result) {
         if (err) throw err;
         console.log(result);
         runSearch();
     });
     
-
+console.log(seclectedRole, seclectedEmp)
+// connection.query(sql)
 }
 
 
